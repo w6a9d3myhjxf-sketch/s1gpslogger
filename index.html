@@ -90,15 +90,15 @@
             border-color: #38bdf8;
         }
 
-        /* KP用サブタブ */
+        /* レイヤー選択タブ（5つ） */
         .layer-tabs {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 8px;
-            margin-bottom: 10px;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+            margin-bottom: 8px;
         }
         .layer-tab {
-            padding: 8px;
+            padding: 8px 4px;
             font-size: 11px;
             font-weight: bold;
             background: #1e293b;
@@ -113,6 +113,9 @@
             color: #fff;
             border-color: #2dd4bf;
         }
+        .layer-tab:nth-child(4), .layer-tab:nth-child(5) {
+            grid-column: span 1.5;
+        }
 
         .control-panel {
             background: #151c2f;
@@ -126,21 +129,22 @@
         }
         .row-group { display: flex; gap: 6px; align-items: center; justify-content: space-between; }
         .row-group label { font-size: 12px; color: #cbd5e1; }
-        .row-group input, .row-group select {
+        .row-group input {
             background: #0f172a; border: 1px solid #475569; color: #fff; padding: 6px; border-radius: 4px; font-size: 13px; text-align: center;
         }
         .btn-jump { background: #0d9488; color: #fff; border: none; padding: 6px 12px; font-weight: bold; border-radius: 4px; cursor: pointer; font-size: 12px; }
+        .btn-auto-detect { background: #7c3aed; color: #fff; border: none; padding: 8px; font-weight: bold; border-radius: 6px; cursor: pointer; width: 100%; font-size: 12px; }
 
         .content-area {
             display: flex;
             flex-direction: column;
             gap: 8px;
-            max-height: 52vh;
+            max-height: 50vh;
             overflow-y: auto;
             padding-right: 4px;
             margin-bottom: 12px;
         }
-        .kp-card, .struct-card {
+        .kp-card {
             background: #151c2f;
             border: 1px solid #334155;
             border-radius: 8px;
@@ -149,13 +153,38 @@
             flex-direction: column;
             gap: 6px;
         }
-        .kp-header-row { display: flex; justify-content: space-between; align-items: center; }
-        .kp-title, .struct-title { font-size: 14px; font-weight: 900; color: #facc15; }
-        .kp-status-text, .struct-status-text { font-size: 10px; color: #94a3b8; }
+        .kp-top-row { display: flex; justify-content: space-between; align-items: center; }
+        .kp-info { display: flex; flex-direction: column; gap: 2px; }
+        .kp-title { font-size: 15px; font-weight: 900; color: #facc15; }
+        .kp-status-text { font-size: 10px; color: #94a3b8; }
         
-        .manual-input-grid {
+        .kp-actions { display: flex; gap: 6px; align-items: center; }
+        
+        .btn-measure {
+            width: 42px; height: 42px;
+            border-radius: 50%;
+            font-weight: bold;
+            font-size: 11px;
+            border: 2px solid rgba(255,255,255,0.2);
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+        .m-step-1 { background: #dc2626; color: #fff; }
+        .m-step-2 { background: #ca8a04; color: #fff; }
+        .m-step-3 { background: #2563eb; color: #fff; }
+        .m-done { background: #16a34a; color: #fff; }
+
+        .btn-undo-single {
+            background: #334155; color: #f87171; border: none; padding: 5px 8px; border-radius: 4px; font-size: 10px; cursor: pointer; font-weight: bold;
+        }
+
+        /* 座標入力＆GPS取得ボタングリッド */
+        .manual-coord-box {
             display: grid;
-            grid-template-columns: 1fr 1fr auto;
+            grid-template-columns: 1fr 1fr auto auto;
             gap: 4px;
             align-items: center;
             background: #0f172a;
@@ -163,13 +192,17 @@
             border-radius: 6px;
             border: 1px solid #1e293b;
         }
-        .manual-input-grid input {
-            background: #151c2f; border: 1px solid #475569; color: #fff; padding: 4px; border-radius: 4px; font-size: 11px; text-align: center;
+        .manual-coord-box input {
+            background: #151c2f; border: 1px solid #475569; color: #fff; padding: 4px; border-radius: 4px; font-size: 11px; text-align: center; width: 100%;
+        }
+        .btn-gps-get {
+            background: #7c3aed; color: #fff; border: none; padding: 5px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; cursor: pointer; white-space: nowrap;
         }
         .btn-manual-save {
-            background: #0d9488; color: #fff; border: none; padding: 5px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer;
+            background: #0d9488; color: #fff; border: none; padding: 5px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer; white-space: nowrap;
         }
 
+        /* 構造物登録フォームのスタイル */
         .builder-form {
             background: #151c2f;
             border: 1px solid #2a3a5e;
@@ -187,7 +220,8 @@
             background: #0f172a; border: 1px solid #475569; color: #fff; padding: 8px; border-radius: 6px; font-size: 13px;
         }
         .struct-coord-row {
-            display: flex;
+            display: grid;
+            grid-template-columns: 75px 1fr 1fr auto;
             gap: 4px;
             align-items: center;
             background: #0f172a;
@@ -195,18 +229,32 @@
             border-radius: 4px;
             margin-top: 2px;
         }
-        .struct-coord-row span { font-size: 10px; color: #94a3b8; width: 75px; flex-shrink: 0; }
+        .struct-coord-row span { font-size: 10px; color: #94a3b8; }
         .struct-coord-row input {
             background: #151c2f; border: 1px solid #475569; color: #fff; padding: 4px; border-radius: 4px; font-size: 11px; text-align: center; width: 100%;
+        }
+        .btn-struct-gps {
+            background: #7c3aed; color: #fff; border: none; padding: 5px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; cursor: pointer; white-space: nowrap;
         }
 
         .btn-save-struct {
             background: #16a34a; color: #fff; border: none; padding: 10px; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer; margin-top: 6px;
         }
+        .struct-card {
+            background: #151c2f;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .struct-info { display: flex; flex-direction: column; gap: 2px; }
+        .struct-title { font-size: 14px; font-weight: 900; color: #facc15; }
+        .struct-status-text { font-size: 10px; color: #94a3b8; }
         .btn-delete-struct {
             background: #991b1b; color: #fecaca; border: none; padding: 5px 8px; border-radius: 4px; font-size: 10px; cursor: pointer;
         }
-        .struct-actions { display: flex; justify-content: flex-end; }
 
         .data-management {
             background: #151c2f; border: 1px solid #2a3a5e; border-radius: 8px; padding: 10px; text-align: center;
@@ -219,6 +267,7 @@
         .gps-status-bar {
             font-size: 11px; padding: 6px; border-radius: 6px; background: #0f172a; margin-bottom: 10px; text-align: center; border: 1px solid #334155;
         }
+        .status-ok { color: #4ade80; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -250,31 +299,35 @@
 
     <header>
         <h1>N.E.C.O. 統合データロガー</h1>
-        <div class="sub-info">首都高川口線 (6.8-12.3kp) ＆ 構造物ビルダー</div>
+        <div class="sub-info">0.0km - 55.0km (手入力 ＆ GPSワンタッチ記録)</div>
     </header>
 
     <div class="gps-status-bar" id="gps-status">
-        東北道・首都高のKPデータおよび構造物データを一括管理します
+        GPS 測位中... (精度: --m)
     </div>
 
     <!-- メインモード切替タブ -->
     <div class="mode-tabs">
-        <div class="mode-tab active" onclick="switchAppMode('KP')">KP 座標マネージャー (6.8-12.3)</div>
-        <div class="mode-tab" onclick="switchAppMode('BUILDER')">構造物ビルダー (手入力)</div>
+        <div class="mode-tab active" onclick="switchAppMode('KP')">KP 記録ロガー (0-55km)</div>
+        <div class="mode-tab" onclick="switchAppMode('BUILDER')">構造物ビルダー</div>
     </div>
 
-    <!-- 【モード1】KP手入力パネル -->
+    <!-- 【モード1】KPリストパネル -->
     <div id="panel-kp">
         <div class="layer-tabs">
-            <div class="layer-tab active" onclick="setLayer('UP')">上り本線 (6.8-12.3kp)</div>
-            <div class="layer-tab" onclick="setLayer('DOWN')">下り本線 (6.8-12.3kp)</div>
+            <div class="layer-tab active" onclick="setLayer('UP')">上り本線</div>
+            <div class="layer-tab" onclick="setLayer('DOWN')">下り本線</div>
+            <div class="layer-tab" onclick="setLayer('UP_SIDE')">上り側道</div>
+            <div class="layer-tab" onclick="setLayer('DOWN_SIDE')">下り側道</div>
+            <div class="layer-tab" onclick="setLayer('CENTER')">中央分離帯</div>
         </div>
 
         <div class="control-panel">
+            <button class="btn-auto-detect" onclick="jumpToCurrentGPS()">現在地のGPS付近にジャンプ</button>
             <div class="row-group">
                 <label>指定KPへジャンプ:</label>
                 <div style="display:flex; gap:4px;">
-                    <input type="number" id="jump-kp-input" value="8.0" step="0.1" min="6.8" max="12.3" style="width: 80px;">
+                    <input type="number" id="jump-kp-input" value="30.0" step="0.1" min="0" max="55" style="width: 80px;">
                     <span style="font-size:12px; align-self:center;">kp</span>
                     <button class="btn-jump" onclick="jumpToKp()">移動</button>
                 </div>
@@ -284,10 +337,10 @@
         <div class="content-area" id="kp-cards-container"></div>
     </div>
 
-    <!-- 【モード2】構造物ビルダー（手入力）パネル -->
+    <!-- 【モード2】構造物ビルダーパネル -->
     <div id="panel-builder" style="display: none;">
         <div class="builder-form">
-            <h3>インフラ構造物 新規登録 (手入力)</h3>
+            <h3>インフラ構造物 新規登録 (手入力 ＆ GPS取得)</h3>
             <div class="form-row">
                 <label>カテゴリ:</label>
                 <select id="struct-category" onchange="onCategoryChange()">
@@ -324,27 +377,31 @@
                 </select>
             </div>
 
-            <div style="font-size: 11px; color: #38bdf8; margin-top: 4px; font-weight: bold;">位置情報リンク（緯度N・経度Eを手入力）</div>
+            <div style="font-size: 11px; color: #38bdf8; margin-top: 4px; font-weight: bold;">位置情報リンク（手入力 ＆ GPSワンタッチ取得）</div>
             
             <div class="struct-coord-row">
                 <span>上り開始(北)</span>
                 <input type="number" id="in_up_start_lat" placeholder="緯度 (N)" step="0.00001">
                 <input type="number" id="in_up_start_lng" placeholder="経度 (E)" step="0.00001">
+                <button class="btn-struct-gps" onclick="grabStructGps('in_up_start')">GPS</button>
             </div>
             <div class="struct-coord-row">
                 <span>上り終了(南)</span>
                 <input type="number" id="in_up_end_lat" placeholder="緯度 (N)" step="0.00001">
                 <input type="number" id="in_up_end_lng" placeholder="経度 (E)" step="0.00001">
+                <button class="btn-struct-gps" onclick="grabStructGps('in_up_end')">GPS</button>
             </div>
             <div class="struct-coord-row">
                 <span>下り開始(南)</span>
                 <input type="number" id="in_down_start_lat" placeholder="緯度 (N)" step="0.00001">
                 <input type="number" id="in_down_start_lng" placeholder="経度 (E)" step="0.00001">
+                <button class="btn-struct-gps" onclick="grabStructGps('in_down_start')">GPS</button>
             </div>
             <div class="struct-coord-row">
                 <span>下り終了(北)</span>
                 <input type="number" id="in_down_end_lat" placeholder="緯度 (N)" step="0.00001">
                 <input type="number" id="in_down_end_lng" placeholder="経度 (E)" step="0.00001">
+                <button class="btn-struct-gps" onclick="grabStructGps('in_down_end')">GPS</button>
             </div>
 
             <button class="btn-save-struct" onclick="saveStructureManual()">構造物を保存する</button>
@@ -392,19 +449,15 @@
 
         let currentMode = 'KP';
         let currentLayer = 'UP';
+        let latestLat = 0;
+        let latestLng = 0;
+        let latestAccuracy = 0;
 
-        const KP_START = 68;
-        const KP_END = 123;
-
-        /* 既存の旧ストレージキー（neco_gps_logger_data も含む）のデータを自動合体して読み込む */
         function getStoredData() {
             try {
                 const masterDataStr = localStorage.getItem('neco_integrated_master_data');
-                if (masterDataStr) {
-                    return JSON.parse(masterDataStr);
-                }
+                if (masterDataStr) return JSON.parse(masterDataStr);
 
-                // 旧データがあれば取り込む
                 let kpLogs = {};
                 const oldTohoku = localStorage.getItem('neco_gps_logger_data');
                 if (oldTohoku) Object.assign(kpLogs, JSON.parse(oldTohoku));
@@ -422,7 +475,6 @@
 
         function saveStoredData(data) {
             localStorage.setItem('neco_integrated_master_data', JSON.stringify(data));
-            // 互換性のため旧キー側もKPログを同期保存
             localStorage.setItem('neco_gps_logger_data', JSON.stringify(data.kpLogs));
             updateStats();
         }
@@ -452,17 +504,46 @@
         }
 
         function initSystem() {
+            if (!navigator.geolocation) {
+                alert("位置情報がサポートされていません");
+                return;
+            }
+            navigator.geolocation.watchPosition(
+                (pos) => {
+                    if (!authenticated) return;
+                    latestLat = pos.coords.latitude;
+                    latestLng = pos.coords.longitude;
+                    latestAccuracy = pos.coords.accuracy;
+                    document.getElementById('gps-status').innerHTML = 
+                        `GPS Active: <span class="status-ok">${latestLat.toFixed(5)}, ${latestLng.toFixed(5)}</span> (精度: +/-${Math.round(latestAccuracy)}m)`;
+                },
+                (err) => {
+                    document.getElementById('gps-status').innerHTML = `<span style="color:#f87171;">GPS エラー: ${err.message}</span>`;
+                },
+                { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 }
+            );
             renderKpList();
             renderStructList();
             updateStats();
         }
 
+        function jumpToCurrentGPS() {
+            if (latestLat === 0) {
+                alert("まだGPSの位置情報が取得できていません。");
+                return;
+            }
+            let estimatedKp = (latestLat - 35.805) * 111.13;
+            if (estimatedKp < 0) estimatedKp = 0;
+            if (estimatedKp > 55) estimatedKp = 55;
+            scrollToKp(Math.round(estimatedKp * 10));
+        }
+
         function jumpToKp() {
             const val = parseFloat(document.getElementById('jump-kp-input').value);
-            if (!isNaN(val) && val >= 6.8 && val <= 12.3) {
+            if (!isNaN(val) && val >= 0 && val <= 55) {
                 scrollToKp(Math.round(val * 10));
             } else {
-                alert("6.8 〜 12.3 の範囲で入力してください。");
+                alert("0.0 〜 55.0 の範囲で入力してください。");
             }
         }
 
@@ -480,31 +561,96 @@
             const data = getStoredData();
             let html = '';
 
-            for (let i = KP_START; i <= KP_END; i++) {
+            for (let i = 0; i <= 550; i++) {
                 let kpVal = (i / 10).toFixed(1);
                 let key = `${currentLayer}_${kpVal}`;
                 let entry = data.kpLogs[key];
 
+                let count = entry && entry.points ? entry.points.length : 0;
+                let btnClass = "m-step-1";
+                let btnText = "1回";
+                if (count === 1) { btnClass = "m-step-2"; btnText = "2回"; }
+                else if (count === 2) { btnClass = "m-step-3"; btnText = "3回"; }
+                else if (count >= 3) { btnClass = "m-done"; btnText = "完了"; }
+
+                let statusInfo = count === 0 ? "未計測" : (count < 3 ? `計測中 (${count}/3回)` : `平均取得済み`);
+
                 let hasAvg = entry && entry.avg;
                 let latVal = hasAvg ? entry.avg.lat : '';
                 let lngVal = hasAvg ? entry.avg.lng : '';
-                let statusText = hasAvg ? "登録済み" : "未登録";
 
                 html += `
                     <div class="kp-card" id="kp-card-${i}">
-                        <div class="kp-header-row">
-                            <div class="kp-title">${kpVal} kp</div>
-                            <div class="kp-status-text" id="status-${currentLayer}-${kpVal}">${statusText}</div>
+                        <div class="kp-top-row">
+                            <div class="kp-info">
+                                <div class="kp-title">${kpVal} kp</div>
+                                <div class="kp-status-text" id="status-text-${currentLayer}-${kpVal}">${statusInfo}</div>
+                            </div>
+                            <div class="kp-actions">
+                                <button class="btn-measure ${btnClass}" onclick="recordPoint('${currentLayer}', '${kpVal}')">${btnText}</button>
+                                ${count > 0 ? `<button class="btn-undo-single" onclick="undoLastPoint('${currentLayer}', '${kpVal}')">1回戻す</button>` : ''}
+                            </div>
                         </div>
-                        <div class="manual-input-grid">
+                        <div class="manual-coord-box">
                             <input type="number" id="lat-${currentLayer}-${kpVal}" placeholder="緯度 (N)" value="${latVal}" step="0.00001">
                             <input type="number" id="lng-${currentLayer}-${kpVal}" placeholder="経度 (E)" value="${lngVal}" step="0.00001">
+                            <button class="btn-gps-get" onclick="grabKpGps('${currentLayer}', '${kpVal}')">現在地GPS</button>
                             <button class="btn-manual-save" onclick="saveKpManual('${currentLayer}', '${kpVal}')">保存</button>
                         </div>
                     </div>
                 `;
             }
             container.innerHTML = html;
+        }
+
+        function recordPoint(layer, kpVal) {
+            if (latestLat === 0) {
+                alert("GPS位置がまだ取得できていません。");
+                return;
+            }
+
+            let data = getStoredData();
+            let key = `${layer}_${kpVal}`;
+            if (!data.kpLogs[key]) {
+                data.kpLogs[key] = { points: [] };
+            }
+
+            if (data.kpLogs[key].points.length >= 3) {
+                alert("既に3回計測が完了しています。");
+                return;
+            }
+
+            data.kpLogs[key].points.push({ lat: latestLat, lng: latestLng, accuracy: latestAccuracy });
+
+            if (data.kpLogs[key].points.length === 3) {
+                let sumLat = 0, sumLng = 0;
+                data.kpLogs[key].points.forEach(p => { sumLat += p.lat; sumLng += p.lng; });
+                data.kpLogs[key].avg = { lat: sumLat / 3, lng: sumLng / 3 };
+            }
+
+            saveStoredData(data);
+            renderKpList();
+        }
+
+        function grabKpGps(layer, kpVal) {
+            if (latestLat === 0) {
+                alert("GPS位置がまだ取得できていません。");
+                return;
+            }
+            document.getElementById(`lat-${layer}-${kpVal}`).value = latestLat.toFixed(6);
+            document.getElementById(`lng-${layer}-${kpVal}`).value = latestLng.toFixed(6);
+        }
+
+        function undoLastPoint(layer, kpVal) {
+            let data = getStoredData();
+            let key = `${layer}_${kpVal}`;
+            if (data.kpLogs[key] && data.kpLogs[key].points && data.kpLogs[key].points.length > 0) {
+                data.kpLogs[key].points.pop();
+                delete data.kpLogs[key].avg;
+                if (data.kpLogs[key].points.length === 0) delete data.kpLogs[key];
+                saveStoredData(data);
+                renderKpList();
+            }
         }
 
         function saveKpManual(layer, kpVal) {
@@ -530,7 +676,7 @@
             };
 
             saveStoredData(data);
-            document.getElementById(`status-${layer}-${kpVal}`).innerText = "登録済み";
+            renderKpList();
             alert(`${kpVal}kp (${layer}) の座標を保存しました！`);
         }
 
@@ -538,6 +684,15 @@
             const cat = document.getElementById('struct-category').value;
             document.getElementById('attr-wall').style.display = (cat === '防音壁') ? 'flex' : 'none';
             document.getElementById('attr-bridge').style.display = (cat === '橋梁') ? 'flex' : 'none';
+        }
+
+        function grabStructGps(prefix) {
+            if (latestLat === 0) {
+                alert("GPS位置がまだ取得できていません。");
+                return;
+            }
+            document.getElementById(prefix + '_lat').value = latestLat.toFixed(6);
+            document.getElementById(prefix + '_lng').value = latestLng.toFixed(6);
         }
 
         function saveStructureManual() {
@@ -620,11 +775,9 @@
                     <div class="struct-card">
                         <div class="struct-info">
                             <div class="struct-title">[${s.category}] ${s.name}</div>
-                            <div class="struct-status-text">${attrStr} 座標手入力データ登録済み</div>
+                            <div class="struct-status-text">${attrStr} 登録済み</div>
                         </div>
-                        <div class="struct-actions">
-                            <button class="btn-delete-struct" onclick="deleteStructure('${s.id}')">削除</button>
-                        </div>
+                        <button class="btn-delete-struct" onclick="deleteStructure('${s.id}')">削除</button>
                     </div>
                 `;
             });
@@ -635,7 +788,7 @@
             let data = getStoredData();
             let kpTotal = Object.keys(data.kpLogs).filter(k => data.kpLogs[k].avg).length;
             let structTotal = data.structures ? data.structures.length : 0;
-            document.getElementById('stats-text').innerText = `KP登録: ${kpTotal}件 / 構造物登録: ${structTotal}件`;
+            document.getElementById('stats-text').innerText = `KP登録完了: ${kpTotal}件 / 構造物登録: ${structTotal}件`;
         }
 
         function exportDataJson() {
@@ -664,8 +817,6 @@
             const entered = document.getElementById('reset-pwd-input').value;
             if (verifyPassword(entered)) {
                 localStorage.removeItem('neco_integrated_master_data');
-                localStorage.removeItem('neco_gps_logger_data');
-                localStorage.removeItem('neco_gps_logger_data_xingou');
                 renderKpList();
                 renderStructList();
                 updateStats();
