@@ -181,7 +181,6 @@
             background: #334155; color: #f87171; border: none; padding: 5px 8px; border-radius: 4px; font-size: 10px; cursor: pointer; font-weight: bold;
         }
 
-        /* 座標入力＆GPS取得ボタングリッド */
         .manual-coord-box {
             display: grid;
             grid-template-columns: 1fr 1fr auto auto;
@@ -350,13 +349,15 @@
                     <option value="カルバート">カルバート</option>
                     <option value="河川">河川</option>
                     <option value="門型">門型</option>
+                    <option value="料金所">料金所</option>
                 </select>
             </div>
             <div class="form-row">
                 <label>名称 (自由入力):</label>
-                <input type="text" id="struct-name" placeholder="例: 新郷跨道橋 / 第1カルバート">
+                <input type="text" id="struct-name" placeholder="例: 新郷本線料金所 / 新郷IC料金所">
             </div>
 
+            <!-- 属性: 防音壁 -->
             <div id="attr-wall" class="form-row">
                 <label>防音壁の高さ:</label>
                 <select id="attr-wall-height">
@@ -364,6 +365,7 @@
                     <option value="低">低い防音壁</option>
                 </select>
             </div>
+            <!-- 属性: 橋梁 -->
             <div id="attr-bridge" class="form-row" style="display:none;">
                 <label>中央分離帯開口部:</label>
                 <select id="attr-bridge-opening">
@@ -374,6 +376,15 @@
                 <select id="attr-bridge-gap">
                     <option value="無">無 (一体型)</option>
                     <option value="有">有 (分離構造・風/落下注意)</option>
+                </select>
+            </div>
+            <!-- 属性: 料金所 -->
+            <div id="attr-toll" class="form-row" style="display:none;">
+                <label>料金所種別・形態:</label>
+                <select id="attr-toll-type">
+                    <option value="本線料金所(TB)">本線料金所 (TB)</option>
+                    <option value="インターチェンジ料金所(IC/入口・出口)">IC料金所 (入口・出口ブース)</option>
+                    <option value="JCT料金所">JCT料金所</option>
                 </select>
             </div>
 
@@ -684,6 +695,7 @@
             const cat = document.getElementById('struct-category').value;
             document.getElementById('attr-wall').style.display = (cat === '防音壁') ? 'flex' : 'none';
             document.getElementById('attr-bridge').style.display = (cat === '橋梁') ? 'flex' : 'none';
+            document.getElementById('attr-toll').style.display = (cat === '料金所') ? 'flex' : 'none';
         }
 
         function grabStructGps(prefix) {
@@ -709,6 +721,8 @@
             } else if (cat === '橋梁') {
                 attrs.opening = document.getElementById('attr-bridge-opening').value;
                 attrs.gap = document.getElementById('attr-bridge-gap').value;
+            } else if (cat === '料金所') {
+                attrs.tollType = document.getElementById('attr-toll-type').value;
             }
 
             let coords = {
@@ -770,6 +784,7 @@
                 let attrStr = '';
                 if (s.category === '防音壁') attrStr = `[高さ: ${s.attributes.height}]`;
                 if (s.category === '橋梁') attrStr = `[分離帯開口: ${s.attributes.opening} / 床板隙間: ${s.attributes.gap}]`;
+                if (s.category === '料金所') attrStr = `[種別: ${s.attributes.tollType}]`;
 
                 html += `
                     <div class="struct-card">
