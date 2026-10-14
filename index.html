@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>N.E.C.O. - 統合型マスターデータロガー ＆ 構造物ビルダー</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background-color: #0b0f19;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            padding: 10px;
+            max-width: 600px;
+            margin: 0 auto;
+            padding-bottom: 50px;
+        }
+
+        /* パスワード認証オーバーレイ */
+        #auth-overlay, #pwd-modal {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(11, 15, 25, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            padding: 15px;
+        }
+        .auth-card {
+            background: #151c2f;
+            border: 1px solid #2a3a5e;
+            border-radius: 10px;
+            padding: 20px 18px;
+            width: 90%;
+            max-width: 380px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+        }
+        .auth-card h2 {
+            font-size: 13px; color: #00ffff; margin-bottom: 12px; letter-spacing: 1px; line-height: 1.4;
+        }
+        .auth-card input {
+            padding: 10px; font-size: 16px; border-radius: 6px; border: 1px solid #475569; background: #0f172a; color: #fff; width: 100%; text-align: center; margin-bottom: 10px; letter-spacing: 2px;
+        }
+        .auth-card button, .modal-btn {
+            padding: 10px; font-size: 15px; font-weight: bold; background: #facc15; color: #000; border: none; border-radius: 6px; cursor: pointer; width: 100%;
+        }
+        .modal-btn-row { display: flex; gap: 8px; margin-top: 10px; }
+        .btn-cancel { background: #334155; color: #cbd5e1; }
+        .btn-confirm { background: #991b1b; color: #fecaca; }
+
+        #auth-error, #pwd-error { color: #f87171; font-size: 13px; margin-top: 8px; display: none; }
+        .auth-copyright { font-size: 10px; color: #64748b; margin-top: 12px; border-top: 1px solid #1e293b; padding-top: 8px; }
+
+        header {
+            background: #151c2f;
+            border: 1px solid #2a3a5e;
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+        h1 { font-size: 14px; color: #00ffff; margin-bottom: 4px; letter-spacing: 1px; }
+        .sub-info { font-size: 11px; color: #8ab4f8; }
+
+        /* メインのモード切替タブ */
+        .mode-tabs {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        .mode-tab {
+            padding: 10px;
+            font-size: 12px;
+            font-weight: bold;
+            background: #1e293b;
+            color: #94a3b8;
+            border: 1px solid #334155;
+            border-radius: 6px;
+            cursor: pointer;
+            text-align: center;
+        }
+        .mode-tab.active {
+            background: #0284c7;
+            color: #fff;
+            border-color: #38bdf8;
+        }
+
+        /* KP用サブタブ */
+        .layer-tabs {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        .layer-tab {
+            padding: 8px;
+            font-size: 11px;
+            font-weight: bold;
+            background: #1e293b;
+            color: #94a3b8;
+            border: 1px solid #334155;
+            border-radius: 6px;
+            cursor: pointer;
+            text-align: center;
+        }
+        .layer-tab.active {
+            background: #0d9488;
+            color: #fff;
+            border-color: #2dd4bf;
+        }
+
+        .control-panel {
+            background: #151c2f;
+            border: 1px solid #2a3a5e;
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .row-group { display: flex; gap: 6px; align-items: center; justify-content: space-between; }
+        .row-group label { font-size: 12px; color: #cbd5e1; }
+        .row-group input, .row-group select {
+            background: #0f172a; border: 1px solid #475569; color: #fff; padding: 6px; border-radius: 4px; font-size: 13px; text-align: center;
+        }
+        .btn-jump { background: #0d9488; color: #fff; border: none; padding: 6px 12px; font-weight: bold; border-radius: 4px; cursor: pointer; font-size: 12px; }
+
+        .content-area {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 52vh;
+            overflow-y: auto;
+            padding-right: 4px;
+            margin-bottom: 12px;
+        }
+        .kp-card, .struct-card {
+            background: #151c2f;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .kp-header-row { display: flex; justify-content: space-between; align-items: center; }
+        .kp-title, .struct-title { font-size: 14px; font-weight: 900; color: #facc15; }
+        .kp-status-text, .struct-status-text { font-size: 10px; color: #94a3b8; }
+        
+        .manual-input-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 4px;
+            align-items: center;
+            background: #0f172a;
+            padding: 6px;
+            border-radius: 6px;
+            border: 1px solid #1e293b;
+        }
+        .manual-input-grid input {
+            background: #151c2f; border: 1px solid #475569; color: #fff; padding: 4px; border-radius: 4px; font-size: 11px; text-align: center;
+        }
+        .btn-manual-save {
+            background: #0d9488; color: #fff; border: none; padding: 5px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer;
+        }
+
+        .builder-form {
+            background: #151c2f;
+            border: 1px solid #2a3a5e;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .builder-form h3 { font-size: 13px; color: #38bdf8; margin-bottom: 4px; }
+        .form-row { display: flex; flex-direction: column; gap: 3px; }
+        .form-row label { font-size: 11px; color: #94a3b8; font-weight: bold; }
+        .form-row input, .form-row select {
+            background: #0f172a; border: 1px solid #475569; color: #fff; padding: 8px; border-radius: 6px; font-size: 13px;
+        }
+        .struct-coord-row {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+            background: #0f172a;
+            padding: 4px;
+            border-radius: 4px;
+            margin-top: 2px;
+        }
+        .struct-coord-row span { font-size: 10px; color: #94a3b8; width: 75px; flex-shrink: 0; }
+        .struct-coord-row input {
+            background: #151c2f; border: 1px solid #475569; color: #fff; padding: 4px; border-radius: 4px; font-size: 11px; text-align: center; width: 100%;
+        }
+
+        .btn-save-struct {
+            background: #16a34a; color: #fff; border: none; padding: 10px; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer; margin-top: 6px;
+        }
+        .btn-delete-struct {
+            background: #991b1b; color: #fecaca; border: none; padding: 5px 8px; border-radius: 4px; font-size: 10px; cursor: pointer;
+        }
+        .struct-actions { display: flex; justify-content: flex-end; }
+
+        .data-management {
+            background: #151c2f; border: 1px solid #2a3a5e; border-radius: 8px; padding: 10px; text-align: center;
+        }
+        .data-btn-row { display: flex; gap: 6px; margin-top: 6px; }
+        .btn-data { flex: 1; padding: 8px; font-size: 12px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; }
+        .btn-export { background: #2563eb; color: #fff; }
+        .btn-reset { background: #991b1b; color: #fecaca; }
+
+        .gps-status-bar {
+            font-size: 11px; padding: 6px; border-radius: 6px; background: #0f172a; margin-bottom: 10px; text-align: center; border: 1px solid #334155;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- パスワード認証画面 -->
+    <div id="auth-overlay">
+        <div class="auth-card">
+            <h2>N.E.C.O. 認証画面<br>統合データロガー</h2>
+            <input type="password" id="pass-input" placeholder="パスワードを入力" onkeydown="if(event.key==='Enter') checkPassword()">
+            <button onclick="checkPassword()">ログイン</button>
+            <div id="auth-error">パスワードが違います</div>
+            <div class="auth-copyright">&copy; 2026 Axis Line Operations</div>
+        </div>
+    </div>
+
+    <!-- リセット確認モーダル -->
+    <div id="pwd-modal" style="display: none;">
+        <div class="auth-card">
+            <h2>全データリセット確認</h2>
+            <p style="font-size: 11px; color: #94a3b8; margin-bottom: 10px;">すべてのデータを削除するにはパスワードを入力してください</p>
+            <input type="password" id="reset-pwd-input" placeholder="••••" onkeydown="if(event.key==='Enter') confirmResetAllData()">
+            <div id="pwd-error">パスワードが違います</div>
+            <div class="modal-btn-row">
+                <button class="modal-btn btn-cancel" onclick="closeResetModal()">キャンセル</button>
+                <button class="modal-btn btn-confirm" onclick="confirmResetAllData()">削除を実行</button>
+            </div>
+        </div>
+    </div>
+
+    <header>
+        <h1>N.E.C.O. 統合データロガー</h1>
+        <div class="sub-info">首都高川口線 (6.8-12.3kp) ＆ 構造物ビルダー</div>
+    </header>
+
+    <div class="gps-status-bar" id="gps-status">
+        東北道・首都高のKPデータおよび構造物データを一括管理します
+    </div>
+
+    <!-- メインモード切替タブ -->
+    <div class="mode-tabs">
+        <div class="mode-tab active" onclick="switchAppMode('KP')">KP 座標マネージャー (6.8-12.3)</div>
+        <div class="mode-tab" onclick="switchAppMode('BUILDER')">構造物ビルダー (手入力)</div>
+    </div>
+
+    <!-- 【モード1】KP手入力パネル -->
+    <div id="panel-kp">
+        <div class="layer-tabs">
+            <div class="layer-tab active" onclick="setLayer('UP')">上り本線 (6.8-12.3kp)</div>
+            <div class="layer-tab" onclick="setLayer('DOWN')">下り本線 (6.8-12.3kp)</div>
+        </div>
+
+        <div class="control-panel">
+            <div class="row-group">
+                <label>指定KPへジャンプ:</label>
+                <div style="display:flex; gap:4px;">
+                    <input type="number" id="jump-kp-input" value="8.0" step="0.1" min="6.8" max="12.3" style="width: 80px;">
+                    <span style="font-size:12px; align-self:center;">kp</span>
+                    <button class="btn-jump" onclick="jumpToKp()">移動</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="content-area" id="kp-cards-container"></div>
+    </div>
+
+    <!-- 【モード2】構造物ビルダー（手入力）パネル -->
+    <div id="panel-builder" style="display: none;">
+        <div class="builder-form">
+            <h3>インフラ構造物 新規登録 (手入力)</h3>
+            <div class="form-row">
+                <label>カテゴリ:</label>
+                <select id="struct-category" onchange="onCategoryChange()">
+                    <option value="防音壁">防音壁</option>
+                    <option value="OV">OV (跨道橋)</option>
+                    <option value="橋梁">橋梁</option>
+                    <option value="カルバート">カルバート</option>
+                    <option value="河川">河川</option>
+                    <option value="門型">門型</option>
+                </select>
+            </div>
+            <div class="form-row">
+                <label>名称 (自由入力):</label>
+                <input type="text" id="struct-name" placeholder="例: 新郷跨道橋 / 第1カルバート">
+            </div>
+
+            <div id="attr-wall" class="form-row">
+                <label>防音壁の高さ:</label>
+                <select id="attr-wall-height">
+                    <option value="高">高い防音壁</option>
+                    <option value="低">低い防音壁</option>
+                </select>
+            </div>
+            <div id="attr-bridge" class="form-row" style="display:none;">
+                <label>中央分離帯開口部:</label>
+                <select id="attr-bridge-opening">
+                    <option value="無">無</option>
+                    <option value="有">有 (開口部あり)</option>
+                </select>
+                <label style="margin-top:4px;">上下線床板の隙間:</label>
+                <select id="attr-bridge-gap">
+                    <option value="無">無 (一体型)</option>
+                    <option value="有">有 (分離構造・風/落下注意)</option>
+                </select>
+            </div>
+
+            <div style="font-size: 11px; color: #38bdf8; margin-top: 4px; font-weight: bold;">位置情報リンク（緯度N・経度Eを手入力）</div>
+            
+            <div class="struct-coord-row">
+                <span>上り開始(北)</span>
+                <input type="number" id="in_up_start_lat" placeholder="緯度 (N)" step="0.00001">
+                <input type="number" id="in_up_start_lng" placeholder="経度 (E)" step="0.00001">
+            </div>
+            <div class="struct-coord-row">
+                <span>上り終了(南)</span>
+                <input type="number" id="in_up_end_lat" placeholder="緯度 (N)" step="0.00001">
+                <input type="number" id="in_up_end_lng" placeholder="経度 (E)" step="0.00001">
+            </div>
+            <div class="struct-coord-row">
+                <span>下り開始(南)</span>
+                <input type="number" id="in_down_start_lat" placeholder="緯度 (N)" step="0.00001">
+                <input type="number" id="in_down_start_lng" placeholder="経度 (E)" step="0.00001">
+            </div>
+            <div class="struct-coord-row">
+                <span>下り終了(北)</span>
+                <input type="number" id="in_down_end_lat" placeholder="緯度 (N)" step="0.00001">
+                <input type="number" id="in_down_end_lng" placeholder="経度 (E)" step="0.00001">
+            </div>
+
+            <button class="btn-save-struct" onclick="saveStructureManual()">構造物を保存する</button>
+        </div>
+
+        <div style="font-size: 12px; font-weight: bold; color: #cbd5e1; margin-bottom: 6px;">登録済み構造物一覧</div>
+        <div class="content-area" id="struct-cards-container"></div>
+    </div>
+
+    <!-- データ管理パネル -->
+    <div class="data-management">
+        <div style="font-size: 12px; font-weight: bold; color: #cbd5e1;" id="stats-text">データ件数: 0 件</div>
+        <div class="data-btn-row">
+            <button class="btn-data btn-export" onclick="exportDataJson()">統合データをJSON出力</button>
+            <button class="btn-data btn-reset" onclick="promptResetAllData()">全データリセット</button>
+        </div>
+    </div>
+
+    <script>
+        const OBFUSCATED_PASSWORD = "6e6578636f6b70"; // "nexcokp"
+
+        function verifyPassword(input) {
+            let encoded = "";
+            for (let i = 0; i < input.length; i++) {
+                let hex = input.charCodeAt(i).toString(16);
+                if (hex.length < 2) hex = "0" + hex;
+                encoded += hex;
+            }
+            return encoded === OBFUSCATED_PASSWORD;
+        }
+
+        let authenticated = false;
+
+        function checkPassword() {
+            const inputVal = document.getElementById("pass-input").value;
+            if (verifyPassword(inputVal)) {
+                authenticated = true;
+                document.getElementById("auth-overlay").style.display = "none";
+                document.getElementById("auth-error").style.display = "none";
+                initSystem();
+            } else {
+                document.getElementById("auth-error").style.display = "block";
+            }
+        }
+
+        let currentMode = 'KP';
+        let currentLayer = 'UP';
+
+        const KP_START = 68;
+        const KP_END = 123;
+
+        /* 既存の旧ストレージキー（neco_gps_logger_data も含む）のデータを自動合体して読み込む */
+        function getStoredData() {
+            try {
+                const masterDataStr = localStorage.getItem('neco_integrated_master_data');
+                if (masterDataStr) {
+                    return JSON.parse(masterDataStr);
+                }
+
+                // 旧データがあれば取り込む
+                let kpLogs = {};
+                const oldTohoku = localStorage.getItem('neco_gps_logger_data');
+                if (oldTohoku) Object.assign(kpLogs, JSON.parse(oldTohoku));
+
+                const oldXingou = localStorage.getItem('neco_gps_logger_data_xingou');
+                if (oldXingou) Object.assign(kpLogs, JSON.parse(oldXingou));
+
+                let initialData = { kpLogs: kpLogs, structures: [] };
+                localStorage.setItem('neco_integrated_master_data', JSON.stringify(initialData));
+                return initialData;
+            } catch(e) {
+                return { kpLogs: {}, structures: [] };
+            }
+        }
+
+        function saveStoredData(data) {
+            localStorage.setItem('neco_integrated_master_data', JSON.stringify(data));
+            // 互換性のため旧キー側もKPログを同期保存
+            localStorage.setItem('neco_gps_logger_data', JSON.stringify(data.kpLogs));
+            updateStats();
+        }
+
+        function switchAppMode(mode) {
+            currentMode = mode;
+            document.querySelectorAll('.mode-tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+
+            if (mode === 'KP') {
+                document.getElementById('panel-kp').style.display = 'block';
+                document.getElementById('panel-builder').style.display = 'none';
+                renderKpList();
+            } else {
+                document.getElementById('panel-kp').style.display = 'none';
+                document.getElementById('panel-builder').style.display = 'block';
+                renderStructList();
+            }
+            updateStats();
+        }
+
+        function setLayer(layer) {
+            currentLayer = layer;
+            document.querySelectorAll('.layer-tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+            renderKpList();
+        }
+
+        function initSystem() {
+            renderKpList();
+            renderStructList();
+            updateStats();
+        }
+
+        function jumpToKp() {
+            const val = parseFloat(document.getElementById('jump-kp-input').value);
+            if (!isNaN(val) && val >= 6.8 && val <= 12.3) {
+                scrollToKp(Math.round(val * 10));
+            } else {
+                alert("6.8 〜 12.3 の範囲で入力してください。");
+            }
+        }
+
+        function scrollToKp(index) {
+            const cardEl = document.getElementById(`kp-card-${index}`);
+            if (cardEl) {
+                cardEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                cardEl.style.borderColor = '#00ffff';
+                setTimeout(() => { cardEl.style.borderColor = '#334155'; }, 2000);
+            }
+        }
+
+        function renderKpList() {
+            const container = document.getElementById('kp-cards-container');
+            const data = getStoredData();
+            let html = '';
+
+            for (let i = KP_START; i <= KP_END; i++) {
+                let kpVal = (i / 10).toFixed(1);
+                let key = `${currentLayer}_${kpVal}`;
+                let entry = data.kpLogs[key];
+
+                let hasAvg = entry && entry.avg;
+                let latVal = hasAvg ? entry.avg.lat : '';
+                let lngVal = hasAvg ? entry.avg.lng : '';
+                let statusText = hasAvg ? "登録済み" : "未登録";
+
+                html += `
+                    <div class="kp-card" id="kp-card-${i}">
+                        <div class="kp-header-row">
+                            <div class="kp-title">${kpVal} kp</div>
+                            <div class="kp-status-text" id="status-${currentLayer}-${kpVal}">${statusText}</div>
+                        </div>
+                        <div class="manual-input-grid">
+                            <input type="number" id="lat-${currentLayer}-${kpVal}" placeholder="緯度 (N)" value="${latVal}" step="0.00001">
+                            <input type="number" id="lng-${currentLayer}-${kpVal}" placeholder="経度 (E)" value="${lngVal}" step="0.00001">
+                            <button class="btn-manual-save" onclick="saveKpManual('${currentLayer}', '${kpVal}')">保存</button>
+                        </div>
+                    </div>
+                `;
+            }
+            container.innerHTML = html;
+        }
+
+        function saveKpManual(layer, kpVal) {
+            let latInput = document.getElementById(`lat-${layer}-${kpVal}`).value;
+            let lngInput = document.getElementById(`lng-${layer}-${kpVal}`).value;
+
+            if (!latInput || !lngInput) {
+                alert("緯度(N)と経度(E)の両方を入力してください。");
+                return;
+            }
+
+            let data = getStoredData();
+            let key = `${layer}_${kpVal}`;
+            
+            data.kpLogs[key] = {
+                points: [
+                    { lat: parseFloat(latInput), lng: parseFloat(lngInput), accuracy: 1 }
+                ],
+                avg: {
+                    lat: parseFloat(latInput),
+                    lng: parseFloat(lngInput)
+                }
+            };
+
+            saveStoredData(data);
+            document.getElementById(`status-${layer}-${kpVal}`).innerText = "登録済み";
+            alert(`${kpVal}kp (${layer}) の座標を保存しました！`);
+        }
+
+        function onCategoryChange() {
+            const cat = document.getElementById('struct-category').value;
+            document.getElementById('attr-wall').style.display = (cat === '防音壁') ? 'flex' : 'none';
+            document.getElementById('attr-bridge').style.display = (cat === '橋梁') ? 'flex' : 'none';
+        }
+
+        function saveStructureManual() {
+            const name = document.getElementById('struct-name').value.trim();
+            if (!name) {
+                alert("構造物の名称を入力してください。");
+                return;
+            }
+
+            const cat = document.getElementById('struct-category').value;
+            let attrs = {};
+            if (cat === '防音壁') {
+                attrs.height = document.getElementById('attr-wall-height').value;
+            } else if (cat === '橋梁') {
+                attrs.opening = document.getElementById('attr-bridge-opening').value;
+                attrs.gap = document.getElementById('attr-bridge-gap').value;
+            }
+
+            let coords = {
+                up_start: readCoord('in_up_start'),
+                up_end: readCoord('in_up_end'),
+                down_start: readCoord('in_down_start'),
+                down_end: readCoord('in_down_end')
+            };
+
+            let data = getStoredData();
+            data.structures.push({
+                id: 'struct_' + Date.now(),
+                category: cat,
+                name: name,
+                attributes: attrs,
+                coords: coords
+            });
+
+            saveStoredData(data);
+            
+            document.getElementById('struct-name').value = '';
+            ['in_up_start', 'in_up_end', 'in_down_start', 'in_down_end'].forEach(p => {
+                document.getElementById(p + '_lat').value = '';
+                document.getElementById(p + '_lng').value = '';
+            });
+
+            renderStructList();
+            alert(`「${name}」を登録しました！`);
+        }
+
+        function readCoord(prefix) {
+            let lat = parseFloat(document.getElementById(prefix + '_lat').value);
+            let lng = parseFloat(document.getElementById(prefix + '_lng').value);
+            if (!isNaN(lat) && !isNaN(lng)) {
+                return { lat: lat, lng: lng };
+            }
+            return null;
+        }
+
+        function deleteStructure(id) {
+            if (!confirm("この構造物データを削除しますか？")) return;
+            let data = getStoredData();
+            data.structures = data.structures.filter(s => s.id !== id);
+            saveStoredData(data);
+            renderStructList();
+        }
+
+        function renderStructList() {
+            const container = document.getElementById('struct-cards-container');
+            const data = getStoredData();
+            let html = '';
+
+            if (!data.structures || data.structures.length === 0) {
+                container.innerHTML = '<div style="text-align:center; font-size:11px; color:#64748b; padding:20px;">登録された構造物はまだありません</div>';
+                return;
+            }
+
+            data.structures.forEach(s => {
+                let attrStr = '';
+                if (s.category === '防音壁') attrStr = `[高さ: ${s.attributes.height}]`;
+                if (s.category === '橋梁') attrStr = `[分離帯開口: ${s.attributes.opening} / 床板隙間: ${s.attributes.gap}]`;
+
+                html += `
+                    <div class="struct-card">
+                        <div class="struct-info">
+                            <div class="struct-title">[${s.category}] ${s.name}</div>
+                            <div class="struct-status-text">${attrStr} 座標手入力データ登録済み</div>
+                        </div>
+                        <div class="struct-actions">
+                            <button class="btn-delete-struct" onclick="deleteStructure('${s.id}')">削除</button>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function updateStats() {
+            let data = getStoredData();
+            let kpTotal = Object.keys(data.kpLogs).filter(k => data.kpLogs[k].avg).length;
+            let structTotal = data.structures ? data.structures.length : 0;
+            document.getElementById('stats-text').innerText = `KP登録: ${kpTotal}件 / 構造物登録: ${structTotal}件`;
+        }
+
+        function exportDataJson() {
+            let data = getStoredData();
+            let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data, null, 2));
+            let downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `neco_integrated_master_export.json`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+        }
+
+        function promptResetAllData() {
+            document.getElementById('reset-pwd-input').value = '';
+            document.getElementById('pwd-error').style.display = 'none';
+            document.getElementById('pwd-modal').style.display = 'flex';
+            document.getElementById('reset-pwd-input').focus();
+        }
+
+        function closeResetModal() {
+            document.getElementById('pwd-modal').style.display = 'none';
+        }
+
+        function confirmResetAllData() {
+            const entered = document.getElementById('reset-pwd-input').value;
+            if (verifyPassword(entered)) {
+                localStorage.removeItem('neco_integrated_master_data');
+                localStorage.removeItem('neco_gps_logger_data');
+                localStorage.removeItem('neco_gps_logger_data_xingou');
+                renderKpList();
+                renderStructList();
+                updateStats();
+                closeResetModal();
+                alert("すべてのデータをリセットしました。");
+            } else {
+                document.getElementById('pwd-error').style.display = 'block';
+            }
+        }
+    </script>
+</body>
+</html>
